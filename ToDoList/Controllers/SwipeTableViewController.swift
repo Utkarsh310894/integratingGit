@@ -13,20 +13,17 @@ class SwipeTableViewController: UITableViewController,SwipeTableViewCellDelegate
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        tableView.reloadData()
+        
       
     }
+    
+    //MARK :- TableView Methods
     func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
         guard orientation == .right else {return nil}
-        
-        
         let deleteAction = SwipeAction(style: .destructive, title: "Delete") { (action, indexPath) in
-            
-            
             self.updateModel(at: indexPath )
 
-            print("Delete Cell ")
-           // }
         }
         
         deleteAction.image = UIImage(named: "Trash Icon")
@@ -41,12 +38,10 @@ class SwipeTableViewController: UITableViewController,SwipeTableViewCellDelegate
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath) as! SwipeTableViewCell
-       
            cell.delegate=self
-      
-        
         return cell
     }
+    //MARK :- Function to update tableViewCell
     func updateModel(at indexPath : IndexPath)
     {
         

@@ -8,7 +8,7 @@
 
 import UIKit
 import CoreData
-import SwipeCellKit
+import ChameleonFramework
 
 class CatagoryViewController: SwipeTableViewController {
     var catagoryArray : [Catagory?] = [Catagory]()
@@ -18,6 +18,7 @@ class CatagoryViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = 80.0
+        navigationController?.navigationBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor : FlatWhite()]
         loadCatagories()
         
         
@@ -40,19 +41,28 @@ class CatagoryViewController: SwipeTableViewController {
         return catagoryArray.count
         
     }
-
-   
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = super.tableView(tableView, cellForRowAt: indexPath )
+       
         cell.textLabel?.text = catagoryArray[indexPath.row]?.name
+        cell.backgroundColor = UIColor.init(hexString: catagoryArray[indexPath.row]?.colour ?? "005493")
+        cell.textLabel?.textColor = ContrastColorOf(cell.backgroundColor!, returnFlat: true)
+        tableView.separatorStyle = .none
         return cell
     }
     
+    
+
+    // MARK:- TableView Delegate Methods
+   
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
          performSegue(withIdentifier: "catagoryItem", sender: self)
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
+    
+    
+    // MARK:- Data Passing
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         let destination = segue.destination as? ToDoListViewController
         if let index = tableView.indexPathForSelectedRow
@@ -62,6 +72,7 @@ class CatagoryViewController: SwipeTableViewController {
         
         
     }
+    //MARK:- ADD BUTTON ACTION PERFORMED
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         var textFeild = UITextField()
@@ -70,8 +81,9 @@ class CatagoryViewController: SwipeTableViewController {
             
         }
         let addCatagory = UIAlertAction(title: "ADD", style: .default) { (action) in
-            var newCatagory = Catagory(context: self.context)
+            let newCatagory = Catagory(context: self.context)
             newCatagory.name = textFeild.text!
+            newCatagory.colour = UIColor.randomFlat.hexValue()
             self.catagoryArray.append(newCatagory)
             self.saveCatagory()
             

@@ -8,11 +8,13 @@
 
 import UIKit
 import CoreData
+import ChameleonFramework
 
 
 class ToDoListViewController: SwipeTableViewController {
  
-    @IBOutlet weak var SearchBar: UISearchBar!
+    @IBOutlet weak var searchBar: UISearchBar!
+    
     var sampleArray = [Item]()
     var selCatagory : Catagory? {
         didSet{
@@ -26,10 +28,40 @@ class ToDoListViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.rowHeight = 80.0
+        tableView.separatorStyle = .none
+       
         
-
-        // Do any additional setup after loading the view, typically from a nib.
     }
+    override func viewWillAppear(_ animated: Bool) {
+        
+        if let colourHex = selCatagory?.colour{
+            title = selCatagory!.name
+            updateNavBar(withHexCode: colourHex)
+        }
+
+        
+    }
+    override func viewWillDisappear(_ animated: Bool) {
+       
+               updateNavBar(withHexCode: "005493")
+    }
+    
+    //MARK:- NAVIGATATION BAR APPEARANCE
+    func updateNavBar (withHexCode  colourHexCode:String)
+    {
+        guard let navBar = navigationController?.navigationBar else{
+            fatalError("Navigation Controller doesnot exist")
+        }
+        if let navBarColour = UIColor(hexString: colourHexCode)
+        {
+            navBar.barTintColor = navBarColour
+            navBar.tintColor = ContrastColorOf(navBarColour, returnFlat: true)
+            navBar.largeTitleTextAttributes = [NSAttributedStringKey.foregroundColor:ContrastColorOf(navBarColour, returnFlat: true)]
+            searchBar.barTintColor = navBarColour
+        }
+    }
+    
+    
     //TableView DataSource Method
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sampleArray.count
@@ -37,12 +69,10 @@ class ToDoListViewController: SwipeTableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
        let cell = super.tableView(tableView, cellForRowAt: indexPath )
        let item = sampleArray[indexPath.row]
-       
+        cell.backgroundColor = UIColor(hexString: (selCatagory?.colour)!)?.darken(byPercentage: CGFloat(indexPath.row)/CGFloat(sampleArray.count))
+        cell.textLabel?.textColor = ContrastColorOf(cell.backgroundColor!, returnFlat: true)
         cell.textLabel?.text=item.itemName
         cell.accessoryType = item.status  ? .checkmark : .none
-        
-    
-
         return cell
     }
     
@@ -55,7 +85,7 @@ class ToDoListViewController: SwipeTableViewController {
     }
     
 
-    
+    //MARK :- ADD BUTTON CLIKED
     @IBAction func addItemButton(_ sender: UIBarButtonItem) {
         var TextFeild = UITextField()
         let alert = UIAlertController(title: "Add Item", message: "Do you want to add new items?", preferredStyle:.alert)
@@ -63,7 +93,7 @@ class ToDoListViewController: SwipeTableViewController {
             
         }
         let addAction = UIAlertAction(title: "ADD", style: .default) { (action) in
-            var newItem = Item(context: self.context)
+            let newItem = Item(context: self.context)
             newItem.itemName = TextFeild.text!
             newItem.parentCatagory = self.selCatagory
             newItem.status = false
@@ -97,8 +127,9 @@ class ToDoListViewController: SwipeTableViewController {
             print("Error saving data into sampleArray \(error)")
         }
          tableView.reloadData()
-    } 
+    }
     
+    // MARK:- Load Data
     func loadItems(with request : NSFetchRequest<Item> =  Item.fetchRequest() , predicate : NSPredicate? = nil  )
     {
         let catagoryPredicate = NSPredicate(format: "parentCatagory.name MATCHES %@", selCatagory!.name! )
@@ -119,6 +150,8 @@ class ToDoListViewController: SwipeTableViewController {
         }
         
     }
+    
+    //MARK:- Delete Data
     override func updateModel(at indexPath: IndexPath) {
        
         context.delete(sampleArray[indexPath.row])
