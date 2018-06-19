@@ -9,7 +9,8 @@
 import UIKit
 import CoreData
 
-class ToDoListViewController: UITableViewController {
+
+class ToDoListViewController: SwipeTableViewController {
  
     @IBOutlet weak var SearchBar: UISearchBar!
     var sampleArray = [Item]()
@@ -20,10 +21,11 @@ class ToDoListViewController: UITableViewController {
     }
     
      let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+
  
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        tableView.rowHeight = 80.0
         
 
         // Do any additional setup after loading the view, typically from a nib.
@@ -33,13 +35,18 @@ class ToDoListViewController: UITableViewController {
         return sampleArray.count
     }
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CopyMAtKar", for: indexPath)
-        let item = sampleArray[indexPath.row]
+       let cell = super.tableView(tableView, cellForRowAt: indexPath )
+       let item = sampleArray[indexPath.row]
+       
         cell.textLabel?.text=item.itemName
         cell.accessoryType = item.status  ? .checkmark : .none
+        
+    
 
         return cell
     }
+    
+    
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         sampleArray[indexPath.row].status = !sampleArray[indexPath.row].status
@@ -90,7 +97,7 @@ class ToDoListViewController: UITableViewController {
             print("Error saving data into sampleArray \(error)")
         }
          tableView.reloadData()
-    }
+    } 
     
     func loadItems(with request : NSFetchRequest<Item> =  Item.fetchRequest() , predicate : NSPredicate? = nil  )
     {
@@ -111,6 +118,18 @@ class ToDoListViewController: UITableViewController {
             print("Error fetching data from context \(error)")
         }
         
+    }
+    override func updateModel(at indexPath: IndexPath) {
+       
+        context.delete(sampleArray[indexPath.row])
+        sampleArray.remove(at: indexPath.row)
+        do{
+        try context.save()
+        }
+        catch
+        {
+            print("Error During Deletion")
+        }
     }
     
     

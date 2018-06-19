@@ -7,16 +7,19 @@
 //
 
 import UIKit
-import CoreData 
+import CoreData
+import SwipeCellKit
 
-class CatagoryViewController: UITableViewController {
-    var catagoryArray = [Catagory]()
+class CatagoryViewController: SwipeTableViewController {
+    var catagoryArray : [Catagory?] = [Catagory]()
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
 
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.rowHeight = 80.0
         loadCatagories()
+        
         
     }
 
@@ -40,10 +43,8 @@ class CatagoryViewController: UITableViewController {
 
    
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "catagoryCell", for: indexPath)
-        let catagory = catagoryArray[indexPath.row]
-        cell.textLabel?.text = catagory.name
-
+        let cell = super.tableView(tableView, cellForRowAt: indexPath )
+        cell.textLabel?.text = catagoryArray[indexPath.row]?.name
         return cell
     }
     
@@ -103,6 +104,18 @@ class CatagoryViewController: UITableViewController {
         }
         tableView.reloadData()
     }
+    override func updateModel(at indexPath: IndexPath) {
+        context.delete(catagoryArray[indexPath.row]!)
+        catagoryArray.remove(at: indexPath.row)
+        do{
+            try context.save()
+        }
+        catch{
+            print("Error during deletion")
+        }
+    }
     
     
 }
+
+
